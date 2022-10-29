@@ -28,6 +28,13 @@ async function main() {
 
   console.log("Token address:", token.address);
 
+
+  const NFT = await ethers.getContractFactory("PlayerCardNFT");
+  const nft = await NFT.deploy("LUFC PlayerCard", "LUPC", "localhost:3000", token.address);
+  await nft.deployed();
+
+  console.log("NFT address:", nft.address);
+
   // We also save the contract's artifacts and address in the frontend directory
   // saveFrontendFiles(token);
 }
