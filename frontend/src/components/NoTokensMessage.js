@@ -1,15 +1,16 @@
 import React from "react";
 
-export function NoTokensMessage({ selectedAddress }) {
+export function NoTokensMessage({ mintTokens }) {
   return (
-    <>
-      <p>You don't have tokens to transfer</p>
-      <p>
-        To get some tokens, open a terminal in the root of the repository and run: 
-        <br />
-        <br />
-        <code>npx hardhat --network localhost faucet {selectedAddress}</code>
-      </p>
-    </>
+    <div>
+      <p>You currently don't have any $LUFT! Mint your first token for free here:</p>
+      <button
+        className="btn btn-success"
+        type="button"
+        onClick={mintTokens}
+      >
+        Mint 1 $LUFT
+      </button>
+    </div>
   );
 }
