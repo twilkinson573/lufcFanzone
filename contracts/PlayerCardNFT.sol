@@ -3,7 +3,9 @@
 
 pragma solidity ^0.8.0;
 
-import "./interfaces/IERC20.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+
+import "./FanToken.sol";
 import "./interfaces/IERC721Metadata.sol";
 
 /**
@@ -11,6 +13,8 @@ import "./interfaces/IERC721Metadata.sol";
  * 
  */
 contract PlayerCardNFT is  IERC721, IERC721Metadata {
+    using Strings for uint256;
+
     // Mapping from token ID to owner address
     mapping(uint256 => address) private _owners;
 
@@ -29,16 +33,16 @@ contract PlayerCardNFT is  IERC721, IERC721Metadata {
 
     address public admin;
 
-    IERC20 private _fanToken;
+    address private _fanTokenAddress;
 
     /**
      * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
      */
-    constructor(string memory name_, string memory symbol_, string memory baseURI_, string memory fanTokenAddress_) {
+    constructor(string memory name_, string memory symbol_, string memory baseURI_, address fanTokenAddress_) {
         _name = name_;
         _symbol = symbol_;
         _baseURI = baseURI_;
-        _fanToken = IERC20(fanTokenAddress_);
+        _fanTokenAddress = fanTokenAddress_;
         admin = msg.sender;
     }
 
@@ -135,19 +139,12 @@ contract PlayerCardNFT is  IERC721, IERC721Metadata {
         return _operatorApprovals[owner][operator];
     }
 
-    function safeMint(
+    function mint(
         address to,
         uint256 tokenId
-    ) public virtual override {
-        safeMint(from, to, tokenId, "");
-    }
-
-    function safeMint(
-        address to,
-        uint256 tokenId,
-        bytes memory data
-    ) public virtual override {
-        _safeMint(from, to, tokenId, data);
+    ) public virtual {
+        require(FanToken(_fanTokenAddress).balanceOf(msg.sender) > 0, "You need at least one fan token to mint a Player Card");
+        _mint(to, tokenId);
     }
 
     /**
@@ -161,58 +158,6 @@ contract PlayerCardNFT is  IERC721, IERC721Metadata {
         require(_isApprovedOrOwner(msg.sender, tokenId), "ERC721: caller is not token owner or approved");
 
         _transfer(from, to, tokenId);
-    }
-
-    /**
-     * @dev See {IERC721-safeTransferFrom}.
-     */
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 tokenId
-    ) public virtual override {
-        safeTransferFrom(from, to, tokenId, "");
-    }
-
-    /**
-     * @dev See {IERC721-safeTransferFrom}.
-     */
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 tokenId,
-        bytes memory data
-    ) public virtual override {
-        require(_isApprovedOrOwner(msg.sender, tokenId), "ERC721: caller is not token owner or approved");
-        _safeTransfer(from, to, tokenId, data);
-    }
-
-    /**
-     * @dev Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients
-     * are aware of the ERC721 protocol to prevent tokens from being forever locked.
-     *
-     * `data` is additional data, it has no specified format and it is sent in call to `to`.
-     *
-     * This internal function is equivalent to {safeTransferFrom}, and can be used to e.g.
-     * implement alternative mechanisms to perform token transfer, such as signature-based.
-     *
-     * Requirements:
-     *
-     * - `from` cannot be the zero address.
-     * - `to` cannot be the zero address.
-     * - `tokenId` token must exist and be owned by `from`.
-     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
-     *
-     * Emits a {Transfer} event.
-     */
-    function _safeTransfer(
-        address from,
-        address to,
-        uint256 tokenId,
-        bytes memory data
-    ) internal virtual {
-        _transfer(from, to, tokenId);
-        require(_checkOnERC721Received(from, to, tokenId, data), "ERC721: transfer to non ERC721Receiver implementer");
     }
 
     /**
@@ -244,37 +189,6 @@ contract PlayerCardNFT is  IERC721, IERC721Metadata {
     function _isApprovedOrOwner(address spender, uint256 tokenId) internal view virtual returns (bool) {
         address owner = ownerOf(tokenId);
         return (spender == owner || isApprovedForAll(owner, spender) || getApproved(tokenId) == spender);
-    }
-
-    /**
-     * @dev Safely mints `tokenId` and transfers it to `to`.
-     *
-     * Requirements:
-     *
-     * - `tokenId` must not exist.
-     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
-     *
-     * Emits a {Transfer} event.
-     */
-    function _safeMint(address to, uint256 tokenId) internal virtual {
-        _safeMint(to, tokenId, "");
-    }
-
-    /**
-     * @dev Same as {xref-ERC721-_safeMint-address-uint256-}[`_safeMint`], with an additional `data` parameter which is
-     * forwarded in {IERC721Receiver-onERC721Received} to contract recipients.
-     */
-    function _safeMint(
-        address to,
-        uint256 tokenId,
-        bytes memory data
-    ) internal virtual {
-        require(
-            _checkOnERC721Received(address(0), to, tokenId, data),
-            "ERC721: transfer to non ERC721Receiver implementer"
-        );
-        require(_fanToken.balanceOf(to) > 0, "ERC721: transfer to non-LUFT holder");
-        _mint(to, tokenId);
     }
 
     /**
@@ -317,11 +231,6 @@ contract PlayerCardNFT is  IERC721, IERC721Metadata {
     function _burn(uint256 tokenId) internal virtual {
         address owner = ownerOf(tokenId);
 
-        _beforeTokenTransfer(owner, address(0), tokenId, 1);
-
-        // Update ownership in case tokenId was transferred by `_beforeTokenTransfer` hook
-        owner = ownerOf(tokenId);
-
         // Clear approvals
         delete _tokenApprovals[tokenId];
 
@@ -353,11 +262,6 @@ contract PlayerCardNFT is  IERC721, IERC721Metadata {
     ) internal virtual {
         require(ownerOf(tokenId) == from, "ERC721: transfer from incorrect owner");
         require(to != address(0), "ERC721: transfer to the zero address");
-
-        _beforeTokenTransfer(from, to, tokenId, 1);
-
-        // Check that tokenId was not transferred by `_beforeTokenTransfer` hook
-        require(ownerOf(tokenId) == from, "ERC721: transfer from incorrect owner");
 
         // Clear approvals from the previous owner
         delete _tokenApprovals[tokenId];
@@ -408,37 +312,4 @@ contract PlayerCardNFT is  IERC721, IERC721Metadata {
         require(_exists(tokenId), "ERC721: invalid token ID");
     }
 
-    /**
-     * @dev Internal function to invoke {IERC721Receiver-onERC721Received} on a target address.
-     * The call is not executed if the target address is not a contract.
-     *
-     * @param from address representing the previous owner of the given token ID
-     * @param to target address that will receive the tokens
-     * @param tokenId uint256 ID of the token to be transferred
-     * @param data bytes optional data to send along with the call
-     * @return bool whether the call correctly returned the expected magic value
-     */
-    function _checkOnERC721Received(
-        address from,
-        address to,
-        uint256 tokenId,
-        bytes memory data
-    ) private returns (bool) {
-        if (to.isContract()) {
-            try IERC721Receiver(to).onERC721Received(msg.sender, from, tokenId, data) returns (bytes4 retval) {
-                return retval == IERC721Receiver.onERC721Received.selector;
-            } catch (bytes memory reason) {
-                if (reason.length == 0) {
-                    revert("ERC721: transfer to non ERC721Receiver implementer");
-                } else {
-                    /// @solidity memory-safe-assembly
-                    assembly {
-                        revert(add(32, reason), mload(reason))
-                    }
-                }
-            }
-        } else {
-            return true;
-        }
-    }
 }
