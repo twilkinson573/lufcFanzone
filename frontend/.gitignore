@@ -2,6 +2,9 @@
 
 src/contracts
 
+# secrets
+.env
+
 # dependencies
 /node_modules
 /.pnp
