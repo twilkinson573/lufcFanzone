@@ -3,6 +3,7 @@
 
 pragma solidity ^0.8.0;
 
+import "./interfaces/IERC20.sol";
 import "./interfaces/IERC721Metadata.sol";
 
 /**
@@ -26,13 +27,16 @@ contract PlayerCardNFT is  IERC721, IERC721Metadata {
     string private _symbol;
     string private _baseURI;
 
+    IERC20 private _fanToken;
+
     /**
      * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
      */
-    constructor(string memory name_, string memory symbol_, string memory baseURI_) {
+    constructor(string memory name_, string memory symbol_, string memory baseURI_, string memory fanTokenAddress_) {
         _name = name_;
         _symbol = symbol_;
         _baseURI = baseURI_;
+        _fanToken = IERC20(fanTokenAddress_);
     }
 
     /**
@@ -122,6 +126,22 @@ contract PlayerCardNFT is  IERC721, IERC721Metadata {
         return _operatorApprovals[owner][operator];
     }
 
+    function safeMint(
+        address to,
+        uint256 tokenId
+    ) public virtual override {
+        safeMint(from, to, tokenId, "");
+    }
+
+    function safeMint(
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) public virtual override {
+        require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: caller is not token owner or approved");
+        _safeMint(from, to, tokenId, data);
+    }
+
     /**
      * @dev See {IERC721-transferFrom}.
      */
@@ -130,7 +150,6 @@ contract PlayerCardNFT is  IERC721, IERC721Metadata {
         address to,
         uint256 tokenId
     ) public virtual override {
-        //solhint-disable-next-line max-line-length
         require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: caller is not token owner or approved");
 
         _transfer(from, to, tokenId);
@@ -242,11 +261,12 @@ contract PlayerCardNFT is  IERC721, IERC721Metadata {
         uint256 tokenId,
         bytes memory data
     ) internal virtual {
-        _mint(to, tokenId);
         require(
             _checkOnERC721Received(address(0), to, tokenId, data),
             "ERC721: transfer to non ERC721Receiver implementer"
         );
+        require(_fanToken.balanceOf(to) > 0, "ERC721: transfer to non-LUFT holder");
+        _mint(to, tokenId);
     }
 
     /**
