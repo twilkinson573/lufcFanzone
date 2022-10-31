@@ -1,4 +1,4 @@
-# LUFC Fanzone Hardhat Boilerplate
+# LUFC Fanzone Hardhat Boilerplate ⚪️🔵🟡
 
 A Playground for ERC20 & ERC721 experimentation
 

@@ -61,20 +61,26 @@ export class Dapp extends React.Component {
         <div className="row">
           <div className="col-12">
             <h1>
-              {this.state.tokenData.name} (${this.state.tokenData.symbol})
+               Leeds United Fanzone ⚪️🔵🟡
             </h1>
+            <br/>
             <p>
-              Welcome <b>{this.state.selectedAddress}</b>, you have{" "}
+              Welcome <b>{this.state.selectedAddress}!</b>
+            </p>
+            <p>You have{" "}
               <b>
-                {this.state.balance.toString()} ${this.state.tokenData.symbol} token
+                {this.state.balance.toString()} {this.state.tokenData.name} (${this.state.tokenData.symbol})
               </b>
             </p>
             <p>
               You also have{" "}
               <b>
-                {this.state.nftBalance.toString()} ${this.state.nftData.symbol} PlayerCard NFTs
+                {this.state.nftBalance.toString()} {this.state.nftData.name} (${this.state.nftData.symbol}) Collectible NFTs
               </b>
             </p>
+            <br/>
+            <hr/>
+            <h4>Get Tokens:</h4>
           </div>
         </div>
 
