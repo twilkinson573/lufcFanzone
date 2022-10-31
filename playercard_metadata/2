@@ -1,0 +1,21 @@
+{
+  "description": "The captain, in command of his defence and not scared of a stiff challenge", 
+  "image": "https://gateway.pinata.cloud/ipfs/QmYbTQ16EfqhqQUmn5GhU3RbH3RK7BLAqAhT4m6JEWAakm/2.png",
+  "name": "Liam Cooper #6",
+  "attributes": [
+      {
+        "trait_type": "Nationality", 
+        "value": "Scottish"
+      }, 
+      {
+        "trait_type": "Position",
+        "value": "Defender"
+      }, 
+      {
+        "trait_type": "Speed", 
+        "display_type": "boost_number",
+        "value": 4
+      }
+    ]
+  }
+}

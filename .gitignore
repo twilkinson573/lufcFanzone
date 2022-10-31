@@ -7,3 +7,6 @@ artifacts
 
 # Secrets
 .env
+
+temp
+.DS_Store

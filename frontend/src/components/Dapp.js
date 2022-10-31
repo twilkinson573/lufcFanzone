@@ -3,6 +3,7 @@ import React from "react";
 import { ethers } from "ethers";
 
 import TokenArtifact from "../compiledArtifacts/FanToken.json";
+import NftArtifact from "../compiledArtifacts/PlayerCardNFT.json";
 
 import { NoWalletDetected } from "./NoWalletDetected";
 import { ConnectWallet } from "./ConnectWallet";
@@ -10,8 +11,9 @@ import { Loading } from "./Loading";
 import { TransactionErrorMessage } from "./TransactionErrorMessage";
 import { WaitingForTransactionMessage } from "./WaitingForTransactionMessage";
 import { NoTokensMessage } from "./NoTokensMessage";
+import { MintNft } from "./MintNft";
 
-const HARDHAT_NETWORK_ID = '1337';
+const HARDHAT_NETWORK_ID = '31337';
 
 const ERROR_CODE_TX_REJECTED_BY_USER = 4001;
 
@@ -21,8 +23,10 @@ export class Dapp extends React.Component {
 
     this.initialState = {
       tokenData: undefined,
+      nftData: undefined,
       selectedAddress: undefined,
       balance: undefined,
+      nftBalance: undefined,
 
       // The ID about transactions being sent, and any possible error with them
       txBeingSent: undefined,
@@ -48,7 +52,7 @@ export class Dapp extends React.Component {
       );
     }
 
-    if (!this.state.tokenData || !this.state.balance) {
+    if (!this.state.tokenData || !this.state.nftData || !this.state.balance || !this.state.nftBalance) {
       return <Loading />;
     }
 
@@ -63,6 +67,12 @@ export class Dapp extends React.Component {
               Welcome <b>{this.state.selectedAddress}</b>, you have{" "}
               <b>
                 {this.state.balance.toString()} ${this.state.tokenData.symbol} token
+              </b>
+            </p>
+            <p>
+              You also have{" "}
+              <b>
+                {this.state.nftBalance.toString()} ${this.state.nftData.symbol} PlayerCard NFTs
               </b>
             </p>
           </div>
@@ -103,7 +113,9 @@ export class Dapp extends React.Component {
             )}
 
             {this.state.balance.gt(0) && (
-              <p>Soon you'll be able to mint a Leeds United PlayerCard NFT!</p>
+              <MintNft 
+                mintNft={() => this._mintNft()} 
+              />
             )}
           </div>
         </div>
@@ -170,6 +182,7 @@ export class Dapp extends React.Component {
     // sample project, but you can reuse the same initialization pattern.
     this._initializeEthers();
     this._getTokenData();
+    this._getNftData();
     this._startPollingData();
   }
 
@@ -177,11 +190,17 @@ export class Dapp extends React.Component {
     // We first initialize ethers by creating a provider using window.ethereum
     this._provider = new ethers.providers.Web3Provider(window.ethereum);
 
-    // Then, we initialize the contract using that provider and the token's
-    // artifact. You can do this same thing with your contracts.
+    // Then, we initialize the contracts using that provider and the token & nft's
+    // artifacts.
     this._token = new ethers.Contract(
       process.env.REACT_APP_TOKEN_CONTRACT_ADDRESS,
       TokenArtifact.abi,
+      this._provider.getSigner(0)
+    );
+
+    this._nft = new ethers.Contract(
+      process.env.REACT_APP_NFT_CONTRACT_ADDRESS,
+      NftArtifact.abi,
       this._provider.getSigner(0)
     );
 
@@ -195,15 +214,19 @@ export class Dapp extends React.Component {
   // don't need to poll it. If that's the case, you can just fetch it when you
   // initialize the app, as we do with the token data.
   _startPollingData() {
-    this._pollDataInterval = setInterval(() => this._updateBalance(), 1000);
+    this._pollDataInterval1 = setInterval(() => this._updateBalance(), 1000);
+    this._pollDataInterval2 = setInterval(() => this._updateNftBalance(), 1000);
 
     // We run it once immediately so we don't have to wait for it
     this._updateBalance();
+    this._updateNftBalance();
   }
 
   _stopPollingData() {
-    clearInterval(this._pollDataInterval);
-    this._pollDataInterval = undefined;
+    clearInterval(this._pollDataInterval1);
+    clearInterval(this._pollDataInterval2);
+    this._pollDataInterval1 = undefined;
+    this._pollDataInterval2 = undefined;
   }
 
   // The next two methods just read from the contract and store the results
@@ -215,17 +238,26 @@ export class Dapp extends React.Component {
     this.setState({ tokenData: { name, symbol } });
   }
 
+  async _getNftData() {
+    const name = await this._nft.name();
+    const symbol = await this._nft.symbol();
+
+    this.setState({ nftData: { name, symbol } });
+  }
+
   async _updateBalance() {
     const balance = await this._token.balanceOf(this.state.selectedAddress);
     this.setState({ balance });
   }
 
+  async _updateNftBalance() {
+    const nftBalance = await this._nft.balanceOf(this.state.selectedAddress);
+    this.setState({ nftBalance });
+  }
+
   async _mintTokens() {
-    console.log("1")
     try {
       this._dismissTransactionError();
-    console.log("2")
-
       const tx = await this._token.mint();
       this.setState({ txBeingSent: tx.hash });
 
@@ -236,6 +268,30 @@ export class Dapp extends React.Component {
       }
 
       await this._updateBalance();
+    } catch (error) {
+      if (error.code === ERROR_CODE_TX_REJECTED_BY_USER) {
+        return;
+      }
+      console.error(error);
+      this.setState({ transactionError: error });
+    } finally {
+      this.setState({ txBeingSent: undefined });
+    }
+  }
+
+  async _mintNft() {
+    try {
+      this._dismissTransactionError();
+      const tx = await this._nft.mint();
+      this.setState({ txBeingSent: tx.hash });
+
+      const receipt = await tx.wait();
+
+      if (receipt.status === 0) {
+        throw new Error("Transaction failed");
+      }
+
+      await this._updateNftBalance();
     } catch (error) {
       if (error.code === ERROR_CODE_TX_REJECTED_BY_USER) {
         return;
