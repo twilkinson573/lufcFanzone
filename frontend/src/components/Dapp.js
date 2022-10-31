@@ -13,7 +13,7 @@ import { WaitingForTransactionMessage } from "./WaitingForTransactionMessage";
 import { NoTokensMessage } from "./NoTokensMessage";
 import { MintNft } from "./MintNft";
 
-const HARDHAT_NETWORK_ID = '31337';
+const NETWORK_ID = process.env.REACT_APP_CHAIN_ID;
 
 const ERROR_CODE_TX_REJECTED_BY_USER = 4001;
 
@@ -330,7 +330,7 @@ export class Dapp extends React.Component {
 
   // This method checks if Metamask selected network is Localhost:8545 
   _checkNetwork() {
-    if (window.ethereum.networkVersion === HARDHAT_NETWORK_ID) {
+    if (window.ethereum.networkVersion === NETWORK_ID) {
       return true;
     }
 

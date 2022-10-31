@@ -15,7 +15,6 @@ async function main() {
     );
   }
 
-  console.log(process.env.NFT_METADATA_BASE_URL);
 
   // ethers is available in the global scope
   const [deployer] = await ethers.getSigners();
@@ -26,13 +25,15 @@ async function main() {
 
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
+  console.log("Deploying ERC20 FanToken...");
   const Token = await ethers.getContractFactory("FanToken");
   const token = await Token.deploy("Leeds United Fan Token", "LUFT");
   await token.deployed();
 
-  console.log("Token address:", token.address);
+  console.log("FanToken address:", token.address);
 
 
+  console.log("Deploying PlayerCard NFT with base URI:", process.env.NFT_METADATA_BASE_URL);
   const NFT = await ethers.getContractFactory("PlayerCardNFT");
   const nft = await NFT.deploy("LUFC PlayerCard", "LUPC", process.env.NFT_METADATA_BASE_URL, token.address);
   await nft.deployed();
