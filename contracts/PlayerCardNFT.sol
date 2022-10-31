@@ -4,6 +4,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "./FanToken.sol";
 import "./interfaces/IERC721Metadata.sol";
@@ -14,6 +15,7 @@ import "./interfaces/IERC721Metadata.sol";
  */
 contract PlayerCardNFT is  IERC721, IERC721Metadata {
     using Strings for uint256;
+    using Counters for Counters.Counter;
 
     // Mapping from token ID to owner address
     mapping(uint256 => address) private _owners;
@@ -26,6 +28,10 @@ contract PlayerCardNFT is  IERC721, IERC721Metadata {
 
     // Mapping from owner to operator approvals
     mapping(address => mapping(address => bool)) private _operatorApprovals;
+
+    Counters.Counter private _tokenIds;
+
+    uint256 public constant MAX_SUPPLY = 5; // Max supply is 5, indexed from 0
 
     string private _name;
     string private _symbol;
@@ -139,12 +145,12 @@ contract PlayerCardNFT is  IERC721, IERC721Metadata {
         return _operatorApprovals[owner][operator];
     }
 
-    function mint(
-        address to,
-        uint256 tokenId
-    ) public virtual {
+    function mint(address to) public virtual {
         require(FanToken(_fanTokenAddress).balanceOf(msg.sender) > 0, "You need at least one fan token to mint a Player Card");
-        _mint(to, tokenId);
+        uint256 newTokenId = _tokenIds.current();
+        require(newTokenId < MAX_SUPPLY, "All PlayerCards have been minted");
+        _mint(to, newTokenId);
+        _tokenIds.increment();
     }
 
     /**
