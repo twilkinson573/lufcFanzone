@@ -11,7 +11,7 @@ import { TransactionErrorMessage } from "./TransactionErrorMessage";
 import { WaitingForTransactionMessage } from "./WaitingForTransactionMessage";
 import { NoTokensMessage } from "./NoTokensMessage";
 
-const HARDHAT_NETWORK_ID = '1337';
+const HARDHAT_NETWORK_ID = '31337';
 
 const ERROR_CODE_TX_REJECTED_BY_USER = 4001;
 

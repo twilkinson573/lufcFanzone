@@ -1,0 +1,21 @@
+{
+  "description": "The unstoppable wall at the back guarding the net", 
+  "image": "https://gateway.pinata.cloud/ipfs/QmYbTQ16EfqhqQUmn5GhU3RbH3RK7BLAqAhT4m6JEWAakm/1.png",
+  "name": "Illan Meslier #1",
+  "attributes": [
+      {
+        "trait_type": "Nationality", 
+        "value": "French"
+      }, 
+      {
+        "trait_type": "Position",
+        "value": "Goalkeeper"
+      }, 
+      {
+        "trait_type": "Speed", 
+        "display_type": "boost_number",
+        "value": 2
+      }
+    ]
+  }
+}

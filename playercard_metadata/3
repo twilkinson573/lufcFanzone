@@ -1,0 +1,21 @@
+{
+  "description": "The mercurial Number 9, a true fox in the box with an eye for a good celebration", 
+  "image": "https://gateway.pinata.cloud/ipfs/QmYbTQ16EfqhqQUmn5GhU3RbH3RK7BLAqAhT4m6JEWAakm/3.png",
+  "name": "Patrick Bamford #9",
+  "attributes": [
+      {
+        "trait_type": "Nationality", 
+        "value": "English"
+      }, 
+      {
+        "trait_type": "Position",
+        "value": "Attacker"
+      }, 
+      {
+        "trait_type": "Speed", 
+        "display_type": "boost_number",
+        "value": 9
+      }
+    ]
+  }
+}

@@ -1,17 +1,21 @@
 // This is a script for deploying your contracts. You can adapt it to deploy
 // yours, or create new ones.
 
+require('dotenv').config()
+
 const path = require("path");
 
 async function main() {
   // This is just a convenience check
   if (network.name === "hardhat") {
     console.warn(
-      "You are trying to deploy a contract to the Hardhat Network, which" +
+      "You are trying to deploy a contract to the Hardhat Network, which " +
         "gets automatically created and destroyed every time. Use the Hardhat" +
         " option '--network localhost'"
     );
   }
+
+  console.log(process.env.NFT_METADATA_BASE_URL);
 
   // ethers is available in the global scope
   const [deployer] = await ethers.getSigners();
@@ -30,7 +34,7 @@ async function main() {
 
 
   const NFT = await ethers.getContractFactory("PlayerCardNFT");
-  const nft = await NFT.deploy("LUFC PlayerCard", "LUPC", "localhost:3000", token.address);
+  const nft = await NFT.deploy("LUFC PlayerCard", "LUPC", process.env.NFT_METADATA_BASE_URL, token.address);
   await nft.deployed();
 
   console.log("NFT address:", nft.address);
