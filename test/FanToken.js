@@ -20,7 +20,7 @@ describe("FanToken ERC20 contract", function () {
       expect(await fanToken.admin()).to.equal(admin.address);
     });
 
-    it("Should assign the total supply of tokens to the admin", async function () {
+    it("Should assign the total initial supply of tokens to the admin", async function () {
       const { fanToken, admin } = await loadFixture(deployTokenFixture);
       const adminBalance = await fanToken.balanceOf(admin.address);
 

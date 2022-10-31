@@ -145,11 +145,11 @@ contract PlayerCardNFT is  IERC721, IERC721Metadata {
         return _operatorApprovals[owner][operator];
     }
 
-    function mint(address to) public virtual {
+    function mint() public virtual {
         require(FanToken(_fanTokenAddress).balanceOf(msg.sender) > 0, "You need at least one fan token to mint a Player Card");
         uint256 newTokenId = _tokenIds.current();
         require(newTokenId < MAX_SUPPLY, "All PlayerCards have been minted");
-        _mint(to, newTokenId);
+        _mint(msg.sender, newTokenId);
         _tokenIds.increment();
     }
 
