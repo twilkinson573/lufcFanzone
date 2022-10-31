@@ -3,19 +3,18 @@
   "image": "https://gateway.pinata.cloud/ipfs/QmYbTQ16EfqhqQUmn5GhU3RbH3RK7BLAqAhT4m6JEWAakm/4.png",
   "name": "Tyler Adams #12",
   "attributes": [
-      {
-        "trait_type": "Nationality", 
-        "value": "American"
-      }, 
-      {
-        "trait_type": "Position",
-        "value": "Midfielder"
-      }, 
-      {
-        "trait_type": "Speed", 
-        "display_type": "boost_number",
-        "value": 7
-      }
-    ]
-  }
+    {
+      "trait_type": "Nationality", 
+      "value": "American"
+    }, 
+    {
+      "trait_type": "Position",
+      "value": "Midfielder"
+    }, 
+    {
+      "trait_type": "Speed", 
+      "display_type": "boost_number",
+      "value": 7
+    }
+  ]
 }
