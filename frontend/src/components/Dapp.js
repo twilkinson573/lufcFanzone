@@ -3,6 +3,7 @@ import React from "react";
 import { ethers } from "ethers";
 
 import TokenArtifact from "../compiledArtifacts/FanToken.json";
+import NftArtifact from "../compiledArtifacts/PlayerCardNFT.json";
 
 import { NoWalletDetected } from "./NoWalletDetected";
 import { ConnectWallet } from "./ConnectWallet";
@@ -21,6 +22,7 @@ export class Dapp extends React.Component {
 
     this.initialState = {
       tokenData: undefined,
+      nftData: undefined,
       selectedAddress: undefined,
       balance: undefined,
 
@@ -170,6 +172,7 @@ export class Dapp extends React.Component {
     // sample project, but you can reuse the same initialization pattern.
     this._initializeEthers();
     this._getTokenData();
+    this._getNftData();
     this._startPollingData();
   }
 
@@ -177,11 +180,17 @@ export class Dapp extends React.Component {
     // We first initialize ethers by creating a provider using window.ethereum
     this._provider = new ethers.providers.Web3Provider(window.ethereum);
 
-    // Then, we initialize the contract using that provider and the token's
-    // artifact. You can do this same thing with your contracts.
+    // Then, we initialize the contracts using that provider and the token & nft's
+    // artifacts.
     this._token = new ethers.Contract(
       process.env.REACT_APP_TOKEN_CONTRACT_ADDRESS,
       TokenArtifact.abi,
+      this._provider.getSigner(0)
+    );
+
+    this._nft = new ethers.Contract(
+      process.env.REACT_APP_NFT_CONTRACT_ADDRESS,
+      NftArtifact.abi,
       this._provider.getSigner(0)
     );
 
@@ -213,6 +222,13 @@ export class Dapp extends React.Component {
     const symbol = await this._token.symbol();
 
     this.setState({ tokenData: { name, symbol } });
+  }
+
+  async _getNftData() {
+    const name = await this._nft.name();
+    const symbol = await this._nft.symbol();
+
+    this.setState({ nftData: { name, symbol } });
   }
 
   async _updateBalance() {
