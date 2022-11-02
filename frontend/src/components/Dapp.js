@@ -14,7 +14,6 @@ import { TransactionErrorMessage } from "./TransactionErrorMessage";
 import { WaitingForTransactionMessage } from "./WaitingForTransactionMessage";
 import { NoTokensMessage } from "./NoTokensMessage";
 import { MintNft } from "./MintNft";
-import { use } from "chai";
 
 const NETWORK_ID = process.env.REACT_APP_CHAIN_ID;
 
@@ -30,6 +29,7 @@ export class Dapp extends React.Component {
       selectedAddress: undefined,
       balance: undefined,
       nftBalance: undefined,
+      userNfts: undefined,
 
       // The ID about transactions being sent, and any possible error with them
       txBeingSent: undefined,
@@ -123,7 +123,8 @@ export class Dapp extends React.Component {
 
             {this.state.balance.gt(0) && (
               <MintNft 
-                mintNft={() => this._mintNft()} 
+                mintNft={() => this._mintNft()}
+                userNfts={this.state.userNfts} 
               />
             )}
           </div>
@@ -260,26 +261,14 @@ export class Dapp extends React.Component {
   async _getNfts(userAddress) {
     const settings = {
       apiKey: process.env.REACT_ATPP_ALCHEMY_API_URL,
-      network: Network.POLYGON_MUMBAI,
+      network: Network.MATIC_MUMBAI,
     };
     
     const alchemy = new Alchemy(settings);
-    console.log("fetching NFTs for address:", userAddress);
-    console.log("...");
-    
-    const nftsForOwner = await alchemy.nft.getNftsForOwner(userAddress);
-    console.log("number of NFTs found:", nftsForOwner.totalCount);
-    console.log("...");
-    
-    for (const nft of nftsForOwner.ownedNfts) {
-      console.log("===");
-      console.log("contract address:", nft.contract.address);
-      console.log("token ID:", nft.tokenId);
-    }
-    console.log("===");
-
+    // const nftsForOwner = await alchemy.nft.getNftsForOwner(userAddress);
+    const userNfts = await (await alchemy.nft.getNftsForOwner("0xD82012324C8a3c2D5721B2444b7ee3d989e65589")).ownedNfts;
+    this.setState({ userNfts });
   }
-
 
   async _mintTokens() {
     try {
@@ -318,6 +307,7 @@ export class Dapp extends React.Component {
       }
 
       await this._updateNftBalance();
+      await this._getNfts(this.state.selectedAddress);
     } catch (error) {
       if (error.code === ERROR_CODE_TX_REJECTED_BY_USER) {
         return;
