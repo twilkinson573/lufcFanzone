@@ -2,6 +2,8 @@ import React from "react";
 
 import { ethers } from "ethers";
 
+import { Network, Alchemy } from "alchemy-sdk";
+
 import TokenArtifact from "../compiledArtifacts/FanToken.json";
 import NftArtifact from "../compiledArtifacts/PlayerCardNFT.json";
 
@@ -12,6 +14,7 @@ import { TransactionErrorMessage } from "./TransactionErrorMessage";
 import { WaitingForTransactionMessage } from "./WaitingForTransactionMessage";
 import { NoTokensMessage } from "./NoTokensMessage";
 import { MintNft } from "./MintNft";
+import { use } from "chai";
 
 const NETWORK_ID = process.env.REACT_APP_CHAIN_ID;
 
@@ -174,21 +177,14 @@ export class Dapp extends React.Component {
   }
 
   _initialize(userAddress) {
-    // This method initializes the dapp
-
-    // We first store the user's address in the component's state
     this.setState({
       selectedAddress: userAddress,
     });
 
-    // Then, we initialize ethers, fetch the token's data, and start polling
-    // for the user's balance.
-
-    // Fetching the token data and the user's balance are specific to this
-    // sample project, but you can reuse the same initialization pattern.
     this._initializeEthers();
     this._getTokenData();
     this._getNftData();
+    this._getNfts(this.state.selectedAddress);
     this._startPollingData();
   }
 
@@ -260,6 +256,30 @@ export class Dapp extends React.Component {
     const nftBalance = await this._nft.balanceOf(this.state.selectedAddress);
     this.setState({ nftBalance });
   }
+
+  async _getNfts(userAddress) {
+    const settings = {
+      apiKey: process.env.REACT_ATPP_ALCHEMY_API_URL,
+      network: Network.POLYGON_MUMBAI,
+    };
+    
+    const alchemy = new Alchemy(settings);
+    console.log("fetching NFTs for address:", userAddress);
+    console.log("...");
+    
+    const nftsForOwner = await alchemy.nft.getNftsForOwner(userAddress);
+    console.log("number of NFTs found:", nftsForOwner.totalCount);
+    console.log("...");
+    
+    for (const nft of nftsForOwner.ownedNfts) {
+      console.log("===");
+      console.log("contract address:", nft.contract.address);
+      console.log("token ID:", nft.tokenId);
+    }
+    console.log("===");
+
+  }
+
 
   async _mintTokens() {
     try {
